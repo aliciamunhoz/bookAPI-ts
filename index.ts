@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import routes from './src/routes/routes';
+import routes from './src/routes/router';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import responser from 'responser';
