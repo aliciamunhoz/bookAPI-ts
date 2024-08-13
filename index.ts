@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import mongoose from 'mongoose';
 import routes from './src/routes/routes';
 import bodyParser from 'body-parser';
@@ -14,13 +14,12 @@ const database = mongoose.connection;
 const app = express();
 const port = 4000;
 
+// Middlewares
 app.use(bodyParser.json());
 app.use(responser);
-app.use('/api', routes);
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello world!');
-});
+// Rotas
+app.use('/api', routes);
 
 app.listen(port, () => {
   console.log(`API running on port ${port}.`);
