@@ -1,6 +1,6 @@
 import express from 'express'
 import mongoose from 'mongoose'
-import routes from './src/routes/router'
+import router from './src/routes/router'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
 import responser from 'responser'
@@ -19,7 +19,7 @@ app.use(bodyParser.json())
 app.use(responser)
 
 // Rotas
-app.use('/api', routes)
+app.use('/api', router)
 
 app.listen(port, () => {
   console.log(`API running on port ${port}.`)

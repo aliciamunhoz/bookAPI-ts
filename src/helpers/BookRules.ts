@@ -2,7 +2,7 @@
 
 import requestCheck from 'request-check'
 
-import is from '../helpers/is'
+import is from './is'
 
 const BookRules = {
   validations: (...args: any) => {
@@ -12,14 +12,14 @@ const BookRules = {
     validator.addRules('id', [
       {
         validator: (value: string) => is.objectId(value),
-        message: 'id inválido!',
+        message: 'ID inválido!',
       },
     ])
 
     validator.addRules('title', [
       {
         validator: (value: string) => is.string(value),
-        message: 'Titulo inválido!',
+        message: 'Título inválido!',
       },
     ])
 
