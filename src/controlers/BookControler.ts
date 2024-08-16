@@ -13,7 +13,7 @@ const BooksControler = {
     )
 
     if (errors) {
-      return res.send_unprocessableEntity('A requisição deu errada', errors)
+      return res.send_badRequest('A requisição deu errada', errors)
     }
 
     const data = new Book({
@@ -56,27 +56,13 @@ const BooksControler = {
 
   async findOne(req: Request, res: Response) {
     const { id } = req.params
-    const errors = BookRules.validations(
-      { id },
-      { title: req.body.title, isRequiredField: false },
-      { author: req.body.author, isRequiredField: false },
-      { publisher: req.body.publisher, isRequiredField: false },
-      { pages: req.body.pages, isRequiredField: false }
-    )
+    const errors = BookRules.validations({ id })
 
     if (errors) {
-      return res.send_unprocessableEntity('A requisição deu errada', errors)
+      return res.send_badRequest('A requisição deu errada', errors)
     }
 
     try {
-      const updatedData = {}
-      if (req.body.title) Object.assign(updatedData, { title: req.body.title })
-      if (req.body.author)
-        Object.assign(updatedData, { author: req.body.author })
-      if (req.body.publisher)
-        Object.assign(updatedData, { publisher: req.body.publisher })
-      if (req.body.pages) Object.assign(updatedData, { pages: req.body.pages })
-
       const data = await Book.findById(req.params.id)
 
       if (!data) {
@@ -93,16 +79,10 @@ const BooksControler = {
 
   async update(req: Request, res: Response) {
     const { id } = req.params
-    const errors = BookRules.validations(
-      { id },
-      { title: req.body.title, isRequiredField: false },
-      { author: req.body.author, isRequiredField: false },
-      { publisher: req.body.publisher, isRequiredField: false },
-      { pages: req.body.pages, isRequiredField: false }
-    )
+    const errors = BookRules.validations({ id })
 
     if (errors) {
-      return res.send_unprocessableEntity('A requisição deu errada', errors)
+      return res.send_badRequest('A requisição deu errada', errors)
     }
 
     try {
@@ -131,27 +111,13 @@ const BooksControler = {
 
   async delete(req: Request, res: Response) {
     const { id } = req.params
-    const errors = BookRules.validations(
-      { id },
-      { title: req.body.title, isRequiredField: false },
-      { author: req.body.author, isRequiredField: false },
-      { publisher: req.body.publisher, isRequiredField: false },
-      { pages: req.body.pages, isRequiredField: false }
-    )
+    const errors = BookRules.validations({ id })
 
     if (errors) {
-      return res.send_unprocessableEntity('A requisição deu errada', errors)
+      return res.send_badRequest('A requisição deu errada', errors)
     }
 
     try {
-      const updatedData = {}
-      if (req.body.title) Object.assign(updatedData, { title: req.body.title })
-      if (req.body.author)
-        Object.assign(updatedData, { author: req.body.author })
-      if (req.body.publisher)
-        Object.assign(updatedData, { publisher: req.body.publisher })
-      if (req.body.pages) Object.assign(updatedData, { pages: req.body.pages })
-
       const data = await Book.findByIdAndDelete(id)
 
       if (!data) {
