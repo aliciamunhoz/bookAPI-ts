@@ -1,5 +1,5 @@
 import express from 'express'
-import booksRouter from './BookRoutes'
+import booksRouter from './book-routes'
 
 const router = express.Router()
 

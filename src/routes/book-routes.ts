@@ -1,5 +1,5 @@
 import express from 'express'
-import BooksControler from '../controlers/BookControler'
+import BooksControler from '../controlers/book-controller'
 
 const books = express.Router()
 

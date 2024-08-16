@@ -12,14 +12,8 @@ const BookRules = {
 
     validator.addRules('id', [
       {
-        validator: (value: string) => is.objectId(value),
-        message: 'ID inválido!',
-      },
-    ])
-
-    validator.addRules('id', [
-      {
-        validator: (id: string) => mongoose.Types.ObjectId.isValid(id),
+        validator: (id: string) =>
+          mongoose.Types.ObjectId.isValid(id) && is.string(id),
         message: 'ID inválido!',
       },
     ])

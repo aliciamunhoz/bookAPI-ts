@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import Book from '../models/Books'
-import BookRules from '../helpers/BookRules'
+import Book from '../models/book-model'
+import BookRules from '../helpers/book-rules'
 
 const BooksControler = {
   async create(req: Request, res: Response) {
@@ -26,31 +26,52 @@ const BooksControler = {
     try {
       const dataToSave = await data.save()
 
-      res.send_created('Livro cadastrado', dataToSave)
+      return res.send_created('Livro cadastrado', dataToSave)
     } catch (error: unknown) {
-      res.send_internalServerError('Houve um erro interno', error)
+      return res.send_internalServerError('Houve um erro interno', error)
     }
   },
 
   async findAll(req: Request, res: Response) {
-    try {
-      const match = {}
+    const allowedFilters = ['title', 'author', 'publisher', 'pages']
 
-      if (req.query.title)
-        Object.assign(match, {
-          title: { $regex: req.query.title, $options: 'i' },
-        })
-      if (req.query.publisher)
-        Object.assign(match, {
-          publisher: { $regex: req.query.publisher, $options: 'i' },
-        })
-      if (req.query.pages) Object.assign(match, { pages: req.query.pages })
+    try {
+      const match: Record<string, unknown> = {}
+      const invalidFilters: string[] = []
+
+      // Verificando filtros permitidos
+      Object.keys(req.query).forEach((key) => {
+        if (allowedFilters.includes(key)) {
+          // Adiciona o filtro à pesquisa
+          if (key === 'title' || key === 'author' || key === 'publisher') {
+            match[key] = { $regex: req.query[key], $options: 'i' } // Filtros com regex para strings
+          } else if (key === 'pages' && !isNaN(Number(req.query[key]))) {
+            match[key] = Number(req.query[key]) // Garante que 'pages' seja numérico
+          } else {
+            invalidFilters.push(key)
+          }
+        } else {
+          invalidFilters.push(key) // Filtros não permitidos
+        }
+      })
+
+      if (invalidFilters.length > 0) {
+        return res.send_badRequest(
+          `Os seguintes filtros não são suportados: ${invalidFilters.join(', ')}`
+        )
+      }
 
       const data = await Book.find(match)
 
+      if (data.length === 0) {
+        return res.send_notFound(
+          'Nenhum livro encontrado para os filtros aplicados.'
+        )
+      }
+
       res.send_ok('Os livros cadastrados foram encontrados.', data)
     } catch (error: unknown) {
-      res.send_internalServerError('Houve um erro interno', error)
+      return res.send_internalServerError('Houve um erro interno', error)
     }
   },
 
@@ -66,14 +87,14 @@ const BooksControler = {
       const data = await Book.findById(req.params.id)
 
       if (!data) {
-        res.send_notFound(
+        return res.send_notFound(
           'Nenhum livro encontrado para o identificador informado!'
         )
       }
 
       res.send_ok('Livro encontrado', data)
     } catch (error: unknown) {
-      res.send_internalServerError('Houve um erro interno', error)
+      return res.send_internalServerError('Houve um erro interno', error)
     }
   },
 
@@ -98,14 +119,14 @@ const BooksControler = {
       const data = await Book.findByIdAndUpdate(id, updatedData, options)
 
       if (!data) {
-        res.send_notFound(
+        return res.send_notFound(
           'Nenhum livro encontrado para o identificador informado!'
         )
       }
 
       res.send_ok('Livro atualizado', data)
     } catch (error: unknown) {
-      res.send_internalServerError('Houve um erro interno', error)
+      return res.send_internalServerError('Houve um erro interno', error)
     }
   },
 
@@ -121,14 +142,14 @@ const BooksControler = {
       const data = await Book.findByIdAndDelete(id)
 
       if (!data) {
-        res.send_notFound(
+        return res.send_notFound(
           'Nenhum livro encontrado para o identificador informado!'
         )
       }
 
       res.send_ok('Livro deletado')
     } catch (error: unknown) {
-      res.send_internalServerError('Houve um erro interno', error)
+      return res.send_internalServerError('Houve um erro interno', error)
     }
   },
 }

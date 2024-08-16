@@ -1,6 +1,6 @@
 import request from 'supertest'
 import app from '../../index'
-import Book from '../models/Books'
+import Book from '../models/book-model'
 import mongoose from 'mongoose'
 
 // Mock do método save
