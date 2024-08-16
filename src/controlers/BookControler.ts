@@ -13,7 +13,7 @@ const BooksControler = {
     )
 
     if (errors) {
-      return res.send_badRequest('A requisição deu errada', errors)
+      return res.send_unprocessableEntity('A requisição deu errada', errors)
     }
 
     const data = new Book({
@@ -34,7 +34,19 @@ const BooksControler = {
 
   async findAll(req: Request, res: Response) {
     try {
-      const data = await Book.find()
+      const match = {}
+
+      if (req.query.title)
+        Object.assign(match, {
+          title: { $regex: req.query.title, $options: 'i' },
+        })
+      if (req.query.publisher)
+        Object.assign(match, {
+          publisher: { $regex: req.query.publisher, $options: 'i' },
+        })
+      if (req.query.pages) Object.assign(match, { pages: req.query.pages })
+
+      const data = await Book.find(match)
 
       res.send_ok('Os livros cadastrados foram encontrados.', data)
     } catch (error: unknown) {
@@ -44,14 +56,34 @@ const BooksControler = {
 
   async findOne(req: Request, res: Response) {
     const { id } = req.params
-    const errors = BookRules.validations({ id })
+    const errors = BookRules.validations(
+      { id },
+      { title: req.body.title, isRequiredField: false },
+      { author: req.body.author, isRequiredField: false },
+      { publisher: req.body.publisher, isRequiredField: false },
+      { pages: req.body.pages, isRequiredField: false }
+    )
 
     if (errors) {
-      return res.send_badRequest('A requisição deu errada', errors)
+      return res.send_unprocessableEntity('A requisição deu errada', errors)
     }
 
     try {
+      const updatedData = {}
+      if (req.body.title) Object.assign(updatedData, { title: req.body.title })
+      if (req.body.author)
+        Object.assign(updatedData, { author: req.body.author })
+      if (req.body.publisher)
+        Object.assign(updatedData, { publisher: req.body.publisher })
+      if (req.body.pages) Object.assign(updatedData, { pages: req.body.pages })
+
       const data = await Book.findById(req.params.id)
+
+      if (!data) {
+        res.send_notFound(
+          'Nenhum livro encontrado para o identificador informado!'
+        )
+      }
 
       res.send_ok('Livro encontrado', data)
     } catch (error: unknown) {
@@ -61,18 +93,37 @@ const BooksControler = {
 
   async update(req: Request, res: Response) {
     const { id } = req.params
-    const errors = BookRules.validations({ id })
+    const errors = BookRules.validations(
+      { id },
+      { title: req.body.title, isRequiredField: false },
+      { author: req.body.author, isRequiredField: false },
+      { publisher: req.body.publisher, isRequiredField: false },
+      { pages: req.body.pages, isRequiredField: false }
+    )
 
     if (errors) {
-      return res.send_badRequest('A requisição deu errada', errors)
+      return res.send_unprocessableEntity('A requisição deu errada', errors)
     }
 
     try {
-      const updatedData = req.body
-      const options = { new: true } // define se vai retornar o conteúdo atualizado no body
-      const result = await Book.findByIdAndUpdate(id, updatedData, options)
+      const updatedData = {}
+      if (req.body.title) Object.assign(updatedData, { title: req.body.title })
+      if (req.body.author)
+        Object.assign(updatedData, { author: req.body.author })
+      if (req.body.publisher)
+        Object.assign(updatedData, { publisher: req.body.publisher })
+      if (req.body.pages) Object.assign(updatedData, { pages: req.body.pages })
 
-      res.send_ok('Livro atualizado', result)
+      const options = { new: true } // define se vai retornar o conteúdo atualizado no body
+      const data = await Book.findByIdAndUpdate(id, updatedData, options)
+
+      if (!data) {
+        res.send_notFound(
+          'Nenhum livro encontrado para o identificador informado!'
+        )
+      }
+
+      res.send_ok('Livro atualizado', data)
     } catch (error: unknown) {
       res.send_internalServerError('Houve um erro interno', error)
     }
@@ -80,14 +131,35 @@ const BooksControler = {
 
   async delete(req: Request, res: Response) {
     const { id } = req.params
-    const errors = BookRules.validations({ id })
+    const errors = BookRules.validations(
+      { id },
+      { title: req.body.title, isRequiredField: false },
+      { author: req.body.author, isRequiredField: false },
+      { publisher: req.body.publisher, isRequiredField: false },
+      { pages: req.body.pages, isRequiredField: false }
+    )
 
     if (errors) {
-      return res.send_badRequest('A requisição deu errada', errors)
+      return res.send_unprocessableEntity('A requisição deu errada', errors)
     }
 
     try {
-      await Book.findByIdAndDelete(id)
+      const updatedData = {}
+      if (req.body.title) Object.assign(updatedData, { title: req.body.title })
+      if (req.body.author)
+        Object.assign(updatedData, { author: req.body.author })
+      if (req.body.publisher)
+        Object.assign(updatedData, { publisher: req.body.publisher })
+      if (req.body.pages) Object.assign(updatedData, { pages: req.body.pages })
+
+      const data = await Book.findByIdAndDelete(id)
+
+      if (!data) {
+        res.send_notFound(
+          'Nenhum livro encontrado para o identificador informado!'
+        )
+      }
+
       res.send_ok('Livro deletado')
     } catch (error: unknown) {
       res.send_internalServerError('Houve um erro interno', error)

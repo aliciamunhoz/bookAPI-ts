@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import requestCheck from 'request-check'
+import mongoose from 'mongoose'
 
 import is from './is'
 
@@ -12,6 +13,13 @@ const BookRules = {
     validator.addRules('id', [
       {
         validator: (value: string) => is.objectId(value),
+        message: 'ID inválido!',
+      },
+    ])
+
+    validator.addRules('id', [
+      {
+        validator: (id: string) => mongoose.Types.ObjectId.isValid(id),
         message: 'ID inválido!',
       },
     ])
