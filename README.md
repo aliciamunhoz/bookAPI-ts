@@ -1,4 +1,4 @@
-# bookAPI-ts
+# BookHub
 
 API REST de livros construída com Node.js, TypeScript, Express e MongoDB.
 
