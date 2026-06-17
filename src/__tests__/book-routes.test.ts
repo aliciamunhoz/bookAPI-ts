@@ -3,9 +3,11 @@ import app from '../../index'
 import Book from '../models/book-model'
 import mongoose from 'mongoose'
 
+const validBookId = '507f1f77bcf86cd799439011'
+
 // Mock do método save
 const mockSave = jest.fn().mockResolvedValue({
-  _id: 'mocked_id',
+  _id: validBookId,
   title: 'Test Book',
   author: 'Test Author',
   publisher: 'Test Publisher',
@@ -15,7 +17,7 @@ const mockSave = jest.fn().mockResolvedValue({
 // Mock do método find
 const mockFind = jest.fn().mockResolvedValue([
   {
-    _id: 'mocked_id',
+    _id: validBookId,
     title: 'Test Book',
     author: 'Test Author',
     publisher: 'Test Publisher',
@@ -24,19 +26,17 @@ const mockFind = jest.fn().mockResolvedValue([
 ])
 
 // Mock do método find
-const mockFindById = jest.fn().mockResolvedValue([
-  {
-    _id: 'mocked_id',
-    title: 'Test Book',
-    author: 'Test Author',
-    publisher: 'Test Publisher',
-    pages: 183,
-  },
-])
+const mockFindById = jest.fn().mockResolvedValue({
+  _id: validBookId,
+  title: 'Test Book',
+  author: 'Test Author',
+  publisher: 'Test Publisher',
+  pages: 183,
+})
 
 // Mock do método findByIdAndUpdate
 const mockFindByIdAndUpdate = jest.fn().mockResolvedValue({
-  _id: 'mocked_id',
+  _id: validBookId,
   title: 'Updated Book',
   author: 'Updated Author',
   publisher: 'Updated Publisher',
@@ -45,7 +45,7 @@ const mockFindByIdAndUpdate = jest.fn().mockResolvedValue({
 
 // Mock do método findByIdAndDelete
 const mockFindByIdAndDelete = jest.fn().mockResolvedValue({
-  _id: 'mocked_id',
+  _id: validBookId,
   title: 'Deleted Book',
   author: 'Deleted Author',
   publisher: 'Deleted Publisher',
@@ -80,44 +80,67 @@ describe('Books API', () => {
     pages: 123,
   }
 
-  it('should create a new book', async () => {
-    const response = await request(app).post('/api/books').send(book)
+  describe('success scenarios', () => {
+    it('should create a new book', async () => {
+      const response = await request(app).post('/api/books').send(book)
 
-    expect(response.status).toBe(201)
-    expect(response.body.data.title).toBe('Test Book')
-    bookId = response.body._id // Armazenar o ID do livro para uso em outros testes
-  })
-
-  it('should get all books', async () => {
-    const response = await request(app).get('/api/books')
-
-    expect(response.status).toBe(200)
-    expect(response.body.data).toHaveLength(1)
-    expect(response.body.data[0].title).toBe('Test Book')
-  })
-
-  it('should get one book', async () => {
-    const response = await request(app).get(`/api/books/${bookId}`)
-
-    expect(response.status).toBe(200)
-    expect(response.body.data).toHaveLength(1)
-    expect(response.body.data[0].title).toBe('Test Book')
-  })
-
-  it('should update a book', async () => {
-    const response = await request(app).patch(`/api/books/${bookId}`).send({
-      title: 'Updated Book',
-      author: 'John Doe Updated',
+      expect(response.status).toBe(201)
+      expect(response.body.data.title).toBe('Test Book')
+      bookId = response.body.data._id
     })
-    console.log(response.body)
-    expect(response.status).toBe(200)
-    expect(response.body.data.title).toBe('Updated Book')
+
+    it('should get all books', async () => {
+      const response = await request(app).get('/api/books')
+
+      expect(response.status).toBe(200)
+      expect(response.body.data).toHaveLength(1)
+      expect(response.body.data[0].title).toBe('Test Book')
+    })
+
+    it('should get one book', async () => {
+      const response = await request(app).get(`/api/books/${bookId}`)
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.title).toBe('Test Book')
+    })
+
+    it('should update a book', async () => {
+      const response = await request(app).patch(`/api/books/${bookId}`).send({
+        title: 'Updated Book',
+        author: 'John Doe Updated',
+      })
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.title).toBe('Updated Book')
+    })
+
+    it('should delete a book', async () => {
+      const response = await request(app).delete(`/api/books/${bookId}`)
+
+      expect(response.status).toBe(200)
+      expect(response.body.message).toBe('Livro deletado')
+    })
   })
 
-  it('should delete a book', async () => {
-    const response = await request(app).delete(`/api/books/${bookId}`)
+  describe('error scenarios', () => {
+    it('should return bad request for invalid id', async () => {
+      const response = await request(app).get('/api/books/invalid-id')
 
-    expect(response.status).toBe(200)
-    expect(response.body.message).toBe('Book deleted')
+      expect(response.status).toBe(400)
+    })
+
+    it('should return bad request for invalid filter', async () => {
+      const response = await request(app).get('/api/books?category=romance')
+
+      expect(response.status).toBe(400)
+    })
+
+    it('should return not found for missing book', async () => {
+      mockFindById.mockResolvedValueOnce(null)
+
+      const response = await request(app).get(`/api/books/${validBookId}`)
+
+      expect(response.status).toBe(404)
+    })
   })
 })
