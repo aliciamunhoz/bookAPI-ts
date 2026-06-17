@@ -3,36 +3,51 @@ import mongoose from 'mongoose'
 import router from './src/routes/router'
 import dotenv from 'dotenv'
 import responser from 'responser'
+import { logError, logInfo } from './src/helpers/logger'
+import cors from 'cors'
 
 dotenv.config()
 
 const app = express()
 const port = Number(process.env.PORT ?? 4000)
 const mongoString = process.env.DATABASE_URL
+const isVercel = process.env.VERCEL === '1'
 
 // Middlewares
 app.use(express.json())
 app.use(responser)
 
-// Rotas
-app.use('/api', router)
+app.use(cors())
 
-const startServer = async () => {
+// Rotas
+app.use(router)
+
+const connectToDatabase = async () => {
   if (!mongoString) {
     throw new Error('DATABASE_URL não foi configurada.')
   }
 
+  if (mongoose.connection.readyState === 1) {
+    return
+  }
+
   await mongoose.connect(mongoString)
-  console.log('Database Connected')
+  logInfo('database.connected')
+}
+
+const startServer = async () => {
+  await connectToDatabase()
 
   app.listen(port, () => {
-    console.log(`API running on port ${port}.`)
+    logInfo('server.started', { port })
   })
 }
 
 if (process.env.NODE_ENV !== 'test') {
-  startServer().catch((error: unknown) => {
-    console.error(error)
+  const bootstrap = isVercel ? connectToDatabase : startServer
+
+  bootstrap().catch((error: unknown) => {
+    logError('server.startup_failed', error, { port })
     process.exit(1)
   })
 }
