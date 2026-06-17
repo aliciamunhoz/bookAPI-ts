@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import Book from '../models/book-model'
 import BookRules from '../helpers/book-rules'
+import { logError, logWarn, requestContext } from '../helpers/logger'
 
 const BooksController = {
   async create(req: Request, res: Response) {
@@ -13,6 +14,10 @@ const BooksController = {
     )
 
     if (errors) {
+      logWarn('books.create.validation_failed', {
+        ...requestContext(req),
+        validationErrors: errors,
+      })
       return res.send_badRequest('A requisição deu errada', errors)
     }
 
@@ -28,6 +33,7 @@ const BooksController = {
 
       return res.send_created('Livro cadastrado', dataToSave)
     } catch (error: unknown) {
+      logError('books.create.failed', error, requestContext(req))
       return res.send_internalServerError('Houve um erro interno', error)
     }
   },
@@ -56,6 +62,10 @@ const BooksController = {
       })
 
       if (invalidFilters.length > 0) {
+        logWarn('books.findAll.invalid_filters', {
+          ...requestContext(req),
+          invalidFilters,
+        })
         return res.send_badRequest(
           `Os seguintes filtros não são suportados: ${invalidFilters.join(', ')}`
         )
@@ -71,6 +81,7 @@ const BooksController = {
 
       res.send_ok('Os livros cadastrados foram encontrados.', data)
     } catch (error: unknown) {
+      logError('books.findAll.failed', error, requestContext(req))
       return res.send_internalServerError('Houve um erro interno', error)
     }
   },
@@ -80,6 +91,10 @@ const BooksController = {
     const errors = BookRules.validations({ id })
 
     if (errors) {
+      logWarn('books.findOne.validation_failed', {
+        ...requestContext(req),
+        validationErrors: errors,
+      })
       return res.send_badRequest('A requisição deu errada', errors)
     }
 
@@ -94,6 +109,7 @@ const BooksController = {
 
       res.send_ok('Livro encontrado', data)
     } catch (error: unknown) {
+      logError('books.findOne.failed', error, requestContext(req))
       return res.send_internalServerError('Houve um erro interno', error)
     }
   },
@@ -103,6 +119,10 @@ const BooksController = {
     const errors = BookRules.validations({ id })
 
     if (errors) {
+      logWarn('books.update.validation_failed', {
+        ...requestContext(req),
+        validationErrors: errors,
+      })
       return res.send_badRequest('A requisição deu errada', errors)
     }
 
@@ -128,6 +148,7 @@ const BooksController = {
 
       res.send_ok('Livro atualizado', data)
     } catch (error: unknown) {
+      logError('books.update.failed', error, requestContext(req))
       return res.send_internalServerError('Houve um erro interno', error)
     }
   },
@@ -137,6 +158,10 @@ const BooksController = {
     const errors = BookRules.validations({ id })
 
     if (errors) {
+      logWarn('books.delete.validation_failed', {
+        ...requestContext(req),
+        validationErrors: errors,
+      })
       return res.send_badRequest('A requisição deu errada', errors)
     }
 
@@ -151,6 +176,7 @@ const BooksController = {
 
       res.send_ok('Livro deletado')
     } catch (error: unknown) {
+      logError('books.delete.failed', error, requestContext(req))
       return res.send_internalServerError('Houve um erro interno', error)
     }
   },
