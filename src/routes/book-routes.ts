@@ -1,21 +1,21 @@
 import express from 'express'
-import BooksControler from '../controlers/book-controller'
+import BooksController from '../controllers/book-controller'
 
 const books = express.Router()
 
 // Create book
-books.post('/', BooksControler.create)
+books.post('/', BooksController.create)
 
 // Get all books
-books.get('/', BooksControler.findAll)
+books.get('/', BooksController.findAll)
 
 // Get book by ID
-books.get('/:id', BooksControler.findOne)
+books.get('/:id', BooksController.findOne)
 
 // Update book by ID
-books.patch('/:id', BooksControler.update)
+books.patch('/:id', BooksController.update)
 
 //Delete by ID Method
-books.delete('/:id', BooksControler.delete)
+books.delete('/:id', BooksController.delete)
 
 export default books

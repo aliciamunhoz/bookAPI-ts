@@ -1,36 +1,40 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import router from './src/routes/router'
-import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
 import responser from 'responser'
 
 dotenv.config()
 
-const mongoString: string = process.env.DATABASE_URL as string
-mongoose.connect(mongoString)
-const database = mongoose.connection
-
 const app = express()
-const port = 4000
+const port = Number(process.env.PORT ?? 4000)
+const mongoString = process.env.DATABASE_URL
 
 // Middlewares
-app.use(bodyParser.json())
+app.use(express.json())
 app.use(responser)
 
 // Rotas
 app.use('/api', router)
 
-app.listen(port, () => {
-  console.log(`API running on port ${port}.`)
-})
+const startServer = async () => {
+  if (!mongoString) {
+    throw new Error('DATABASE_URL não foi configurada.')
+  }
 
-database.on('error', (error: unknown) => {
-  console.log(error)
-})
-
-database.once('connected', () => {
+  await mongoose.connect(mongoString)
   console.log('Database Connected')
-})
+
+  app.listen(port, () => {
+    console.log(`API running on port ${port}.`)
+  })
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  startServer().catch((error: unknown) => {
+    console.error(error)
+    process.exit(1)
+  })
+}
 
 export default app
